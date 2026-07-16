@@ -1,5 +1,9 @@
 # Description du projet
 Ce dépôt contient les sources d'un site statique qui permet à des utilisateurs authentifiés d'accèder à un interface permttant de démarrer à distance des machines via un mécanisme de Wake On Lan (WOL).
+
+Le site est déployé automatiquement à chaque modificationdu dépôt à l'adresse :
+https://avecousansvous-flow.github.io/wol-front/
+
 ## Expérience utilisateur
 Le site contient un formulaire qui demande aux utilisateurs un mail et un mot de passe. 
 
