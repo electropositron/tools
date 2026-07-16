@@ -1,0 +1,2 @@
+- Remplacer innerHTML par textContent et setAttribute
+- Améliorer le traitement des input utilisateurs ('required' HTML) : adresse mail valide, longueur du mot de passe, etc
