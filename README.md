@@ -27,6 +27,7 @@ La bibliothèque permettant au site de communiquer avec la base de données est 
 ```
 ### Authentification
 Puis l'authentification est gérée ici
+ATTENTION : la clef d'API de Supbase est une clef publique, elle est faite pour être fournie à un script javascript. Elle est gérée via des RLS (Row Level Security) sur Supabase afin d'empècher toute modification par des tiers non authentifiés et ne donne accès qu'aux zones modifiables des table de la base de donnée.
 ```
       const supabase = createClient(
         'https://bmzijxtvhjbugcdkfswe.supabase.co',
