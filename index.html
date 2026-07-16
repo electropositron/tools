@@ -3,37 +3,159 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Site de démonstration pour GitHub Pages" />
-    <title>Mon site GitHub Pages</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta
+      name="description"
+      content="Page de connexion WOL Portal pour Wake On LAN via Supabase"
+    />
+    <title>WOL Portal | Connexion</title>
+    <link rel="stylesheet" href="../styles.css" />
   </head>
   <body>
-    <main class="page">
-      <section class="hero">
-        <p class="eyebrow">GitHub Pages</p>
-        <h1>Bienvenue sur votre nouveau site web</h1>
+    <main class="page auth-page">
+      <section class="auth-card">
+        <p class="eyebrow">WOL Portal</p>
+        <h1>Connexion</h1>
         <p class="lead">
-          Cette page statique est prête à être publiée depuis votre dépôt GitHub.
+          Accédez au tableau de bord Wake On LAN et envoyez des requêtes d’allumage.
         </p>
-        <a class="button" href="https://pages.github.com/" target="_blank" rel="noreferrer">
-          En savoir plus
-        </a>
-      </section>
 
-      <section class="cards">
-        <article class="card">
-          <h2>Simple</h2>
-          <p>Un site en HTML et CSS, sans dépendance supplémentaire.</p>
-        </article>
-        <article class="card">
-          <h2>Rapide</h2>
-          <p>Publication immédiate avec un dépôt GitHub et la branche principale.</p>
-        </article>
-        <article class="card">
-          <h2>Flexible</h2>
-          <p>Vous pouvez ensuite ajouter des pages, des images ou un design plus avancé.</p>
-        </article>
+        <div id="login" class="auth-form">
+          <label class="field">
+            <span>Email</span>
+            <input
+              id="email"
+              type="email"
+              placeholder="prenom.nom@example.com"
+              autocomplete="email"
+              required
+            />
+          </label>
+
+          <label class="field">
+            <span>Mot de passe</span>
+            <input
+              id="password"
+              type="password"
+              placeholder="Votre mot de passe"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+
+          <button class="button auth-button" type="button" onclick="login()">
+            Connexion
+          </button>
+        </div>
+
+        <div id="machines" class="machines-panel" style="display: none">
+          <h2>Machines</h2>
+          <div id="list" class="machine-list"></div>
+        </div>
       </section>
     </main>
+
+    <script type="module">
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+      const supabase = createClient(
+        'https://bmzijxtvhjbugcdkfswe.supabase.co',
+        'sb_publishable_n13ojVtT79rG2WbTEq9S8w_zlOlH3H4'
+      );
+
+      window.login = async function () {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          alert(error.message);
+          return;
+        }
+
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('machines').style.display = 'grid';
+
+        await loadMachines();
+      };
+
+      async function loadMachines() {
+        const { data, error } = await supabase.from('machines').select('*');
+
+        if (error) {
+          alert(error.message);
+          return;
+        }
+
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p class="empty-state">Aucune machine disponible.</p>';
+          return;
+        }
+
+        data.forEach((machine) => {
+          const item = document.createElement('div');
+          item.className = 'machine-item';
+          item.innerHTML = `
+            <strong>${machine.name}</strong>
+            <button class="button machine-button" type="button" onclick="wake('${machine.id}', event)">
+              Allumer
+            </button>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      window.wake = async function (id, event) {
+        const button = event?.target;
+
+        if (button) {
+          button.disabled = true;
+          button.textContent = 'Envoi...';
+        }
+
+        const { error } = await supabase.from('wol_requests').insert({
+          machine_id: id,
+          status: 'pending'
+        });
+
+        if (error) {
+          if (button) {
+            button.disabled = false;
+            button.textContent = 'Échec';
+            button.style.backgroundColor = '#ff6b6b';
+            button.style.color = '#fff';
+          }
+          alert(error.message);
+
+          setTimeout(() => {
+            if (button) {
+              button.textContent = 'Allumer';
+              button.style.backgroundColor = '';
+              button.style.color = '';
+            }
+          }, 5000);
+          return;
+        }
+
+        if (button) {
+          button.textContent = 'Envoyé';
+        }
+
+        setTimeout(() => {
+          if (button) {
+            button.disabled = false;
+            button.textContent = 'Allumer';
+            button.style.backgroundColor = '';
+            button.style.color = '';
+          }
+        }, 30000);
+      };
+    </script>
   </body>
 </html>
